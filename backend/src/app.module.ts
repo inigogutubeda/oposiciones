@@ -2,24 +2,26 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
 import { User } from './auth/entities/user.entity';
-import { AppController } from './app.controller';
+import * as dotenv from 'dotenv';
+
+dotenv.config();
 
 @Module({
   imports: [
     TypeOrmModule.forRoot({
       type: 'postgres',
-      host: 'localhost',
-      port: 5432,
-      username: 'postgres',    // Ajusta a tu usuario
-      password: '@Haliax201408498',    // Ajusta a tu contraseña
-      database: 'academia_test',// BD de test
+      host: process.env.DB_HOST || 'localhost',
+      port: Number(process.env.DB_PORT) || 5432,
+      username: process.env.DB_USER || 'postgres',
+      password: process.env.DB_PASS || 'tu_contraseña',
+      database: process.env.NODE_ENV === 'test' ? 'academia_test' : 'academia',
       entities: [User],
-      synchronize: true,
-      dropSchema: true,         // Limpia y recrea tablas cada vez
+      synchronize: process.env.NODE_ENV !== 'test',
+      dropSchema: process.env.NODE_ENV === 'test',
     }),
     AuthModule,
   ],
-  controllers: [AppController],
+  controllers: [],
   providers: [],
 })
 export class AppModule {}
