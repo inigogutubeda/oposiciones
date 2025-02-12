@@ -1,0 +1,24 @@
+{
+  "name": "oposiciones",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "test:e2e": "jest --config ./test/jest-e2e.json --runInBand"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "pg": "^8.13.1",
+    "reflect-metadata": "^0.2.2",
+    "typeorm": "^0.3.20",
+    "@nestjs/common": "^11.0.1",
+    "@nestjs/core": "^11.0.1",
+    "@nestjs/platform-express": "^11.0.1",
+    "@nestjs/testing": "^11.0.1",
+    "@nestjs/typeorm": "^11.0.0",
+    "supertest": "^7.0.0"
+  }
+}
