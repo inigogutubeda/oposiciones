@@ -9,6 +9,9 @@ import {
   UseGuards,
   Get,
   Request,
+  UnauthorizedException,
+  InternalServerErrorException,
+  ConflictException,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
@@ -27,9 +30,15 @@ export class AuthController {
    */
   @Post('register')
   async register(@Body() body: { email: string; password: string }) {
-    const user = await this.authService.registerUser(body);
-    // Por defecto, Nest  usa status 201 (CREATED) en un POST
-    return user;
+    try {
+      const user = await this.authService.registerUser(body);
+      return user;
+    } catch (error) {
+      if (error.code === '23505') { // Postgres unique violation
+        throw new ConflictException('Email already exists');
+      }
+      throw new InternalServerErrorException();
+    }
   }
 
   /**
@@ -39,12 +48,18 @@ export class AuthController {
   @Post('login')
   @HttpCode(200)
   async login(@Body() body: { email: string; password: string }) {
-    const result = await this.authService.loginUser(body);
-    if (!result) {
-      // Si loginUser retornó null, credenciales inválidas => 401 Unauthorized
-      throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
+    try {
+      const result = await this.authService.loginUser(body);
+      if (!result) {
+        throw new UnauthorizedException('Invalid credentials');
+      }
+      return result;
+    } catch (error) {
+      if (error instanceof UnauthorizedException) {
+        throw error;
+      }
+      throw new InternalServerErrorException();
     }
-    return result; // { token: '...' }
   }
 
   /**
@@ -55,7 +70,10 @@ export class AuthController {
   @Get('profile')
   @UseGuards(AuthGuard('jwt'))
   getProfile(@Request() req) {
-    // req.user viene de la estrategia JwtStrategy (validate())
-    return req.user;
+    try {
+      return req.user;
+    } catch (error) {
+      throw new InternalServerErrorException();
+    }
   }
 }
